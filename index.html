@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>FF AIMLOCK PANEL - LIGHTWEIGHT</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=Rajdhani:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --ff-yellow: #ffcc00;
+      --ff-red: #ff0033;
+      --ff-cyan: #00f3ff;
+      --bg-dark: #080a10;
+      --panel-bg: rgba(15, 20, 32, 0.85);
+      --border-glow: rgba(255, 204, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      font-family: 'Rajdhani', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+      overflow-x: hidden;
+      touch-action: none;
+    }
+
+    /* Top Bar Header FF */
+    header {
+      background: linear-gradient(90deg, #111827, #080a10);
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 2px solid var(--ff-yellow);
+      box-shadow: 0 0 10px rgba(255, 204, 0, 0.2);
+    }
+
+    .brand {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1rem;
+      font-weight: 900;
+      color: var(--ff-yellow);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      letter-spacing: 1px;
+    }
+
+    .status-badge {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 4px;
+      background: rgba(255, 0, 51, 0.2);
+      color: var(--ff-red);
+      border: 1px solid var(--ff-red);
+      font-weight: 800;
+    }
+
+    .status-badge.active {
+      background: rgba(255, 204, 0, 0.2);
+      color: var(--ff-yellow);
+      border-color: var(--ff-yellow);
+      box-shadow: 0 0 8px var(--ff-yellow);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    /* Canvas Screen simulation FF */
+    .viewport-box {
+      position: relative;
+      width: 100%;
+      height: 220px;
+      background: #000;
+      border-radius: 10px;
+      border: 1px solid var(--border-glow);
+      overflow: hidden;
+    }
+
+    canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .hud-info {
+      position: absolute;
+      top: 6px;
+      left: 8px;
+      right: 8px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+      color: var(--ff-yellow);
+      font-family: 'Orbitron', sans-serif;
+      pointer-events: none;
+    }
+
+    /* Cards Panel */
+    .panel-card {
+      background: var(--panel-bg);
+      border: 1px solid rgba(255, 204, 0, 0.15);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .card-title {
+      font-size: 0.8rem;
+      color: var(--ff-yellow);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 700;
+    }
+
+    .control-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .control-label {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    /* Switch CSS */
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 22px;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.15);
+      transition: .3s;
+      border-radius: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 14px; width: 14px;
+      left: 3px; bottom: 3px;
+      background-color: #fff;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--ff-yellow);
+      border-color: var(--ff-yellow);
+      box-shadow: 0 0 8px var(--ff-yellow);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+      background-color: #000;
+    }
+
+    /* Sliders Range */
+    .range-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .range-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8rem;
+    }
+
+    input[type=range] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.1);
+      height: 5px;
+      border-radius: 3px;
+      outline: none;
+    }
+
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--ff-yellow);
+      cursor: pointer;
+      box-shadow: 0 0 6px var(--ff-yellow);
+    }
+
+    /* Preset Guns Buttons */
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .preset-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #fff;
+      padding: 6px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .preset-btn.active {
+      background: rgba(255, 204, 0, 0.2);
+      border-color: var(--ff-yellow);
+      color: var(--ff-yellow);
+    }
+
+    /* Terminal Console */
+    .console-box {
+      background: #000;
+      border: 1px solid rgba(255, 204, 0, 0.2);
+      border-radius: 6px;
+      padding: 6px 8px;
+      font-family: monospace;
+      font-size: 0.65rem;
+      height: 55px;
+      overflow-y: auto;
+      color: #00ffaa;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    /* Main Button */
+    .action-container {
+      padding: 6px 10px 14px 10px;
+      background: var(--bg-dark);
+    }
+
+    .activate-btn {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #ff0033, #990011);
+      color: #fff;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 900;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 0 12px rgba(255, 0, 51, 0.4);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .activate-btn.active {
+      background: linear-gradient(135deg, #ffcc00, #ff8800);
+      color: #000;
+      box-shadow: 0 0 18px rgba(255, 204, 0, 0.6);
+    }
+
+    .activate-btn:active {
+      transform: scale(0.98);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand">
+      <i class="fa-solid fa-fire-flame-curved"></i> REGEDIT FF - LIGHT AIM
+    </div>
+    <div class="status-badge" id="statusBadge">INACTIVE</div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Viewport Canvas Free Fire -->
+    <div class="viewport-box">
+      <div class="hud-info">
+        <span id="targetMode">DRAG HEADSHOT: OFF</span>
+        <span id="sensiValue">SENSI: 100%</span>
+      </div>
+      <canvas id="ffCanvas"></canvas>
+    </div>
+
+    <!-- Gun Presets Free Fire -->
+    <div class="panel-card">
+      <div class="card-title">
+        <i class="fa-solid fa-crosshair"></i> Cấu hình Súng (Gun Presets)
+      </div>
+      <div class="preset-grid">
+        <div class="preset-btn active" onclick="setPreset('shotgun', this)">SHOTGUN (M1887)</div>
+        <div class="preset-btn" onclick="setPreset('smg', this)">SMG (UMP/MP40)</div>
+        <div class="preset-btn" onclick="setPreset('ar', this)">AR (AK/SCAR)</div>
+      </div>
+    </div>
+
+    <!-- Controls Nhẹ Tâm & Headshot -->
+    <div class="panel-card">
+      <div class="card-title">
+        <i class="fa-solid fa-wand-magic-sparkles"></i> Tính năng Nhẹ Tâm (Smooth Drag)
+      </div>
+      
+      <div class="control-row">
+        <span class="control-label">Khóa Đầu (Auto Headshot)</span>
+        <label class="switch">
+          <input type="checkbox" id="toggleHeadshot" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="control-row">
+        <span class="control-label">Nhẹ Tâm (Anti-Gia Tốc)</span>
+        <label class="switch">
+          <input type="checkbox" id="toggleLightAim" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <div class="range-group">
+        <div class="range-header">
+          <span>Độ nhạy Kéo Tâm (Drag Speed)</span>
+          <span id="dragVal" style="color:var(--ff-yellow)">95%</span>
+        </div>
+        <input type="range" id="sliderDrag" min="50" max="100" value="95">
+      </div>
+
+      <div class="range-group">
+        <div class="range-header">
+          <span>Vòng ngắm FOV Kéo Tâm</span>
+          <span id="fovVal" style="color:var(--ff-yellow)">60px</span>
+        </div>
+        <input type="range" id="sliderFov" min="20" max="120" value="60">
+      </div>
+    </div>
+
+    <!-- Terminal Console -->
+    <div class="console-box" id="consoleLog">
+      <div>[SYSTEM] Khởi tạo Regedit FF OB55...</div>
+      <div>[READY] Hãy bấm "Kích hoạt Nhẹ Tâm FF".</div>
+    </div>
+  </main>
+
+  <!-- Action Button -->
+  <div class="action-container">
+    <button class="activate-btn" id="mainBtn">
+      <i class="fa-solid fa-bolt"></i> KÍCH HOẠT NHẸ TÂM FF
+    </button>
+  </div>
+
+  <script>
+    function triggerHaptic() {
+      if (navigator.vibrate) navigator.vibrate(12);
+    }
+
+    const canvas = document.getElementById('ffCanvas');
+    const ctx = canvas.getContext('2d');
+    const mainBtn = document.getElementById('mainBtn');
+    const statusBadge = document.getElementById('statusBadge');
+    const consoleLog = document.getElementById('consoleLog');
+    
+    const toggleHeadshot = document.getElementById('toggleHeadshot');
+    const toggleLightAim = document.getElementById('toggleLightAim');
+    const sliderDrag = document.getElementById('sliderDrag');
+    const dragVal = document.getElementById('dragVal');
+    const sliderFov = document.getElementById('sliderFov');
+    const fovVal = document.getElementById('fovVal');
+    const targetMode = document.getElementById('targetMode');
+
+    let isActive = false;
+    let isDraggingTouch = false;
+    let crosshair = { x: 0, y: 0 };
+    let enemy = { x: 0, y: 0, vx: 2.2, vy: 1.2, headRadius: 10, bodyHeight: 35 };
+
+    function addLog(msg, color = "#ffcc00") {
+      const line = document.createElement('div');
+      line.style.color = color;
+      line.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] ${msg}`;
+      consoleLog.appendChild(line);
+      consoleLog.scrollTop = consoleLog.scrollHeight;
+    }
+
+    function resizeCanvas() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+      crosshair.x = canvas.width / 2;
+      crosshair.y = canvas.height / 2 + 20;
+      enemy.x = canvas.width / 3;
+      enemy.y = canvas.height / 3;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Preset Gun Handler
+    function setPreset(type, element) {
+      triggerHaptic();
+      document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+      element.classList.add('active');
+
+      if (type === 'shotgun') {
+        sliderDrag.value = 100;
+        sliderFov.value = 50;
+        addLog('Đã chọn Preset: M1887/Shotgun (Kéo tâm siêu nhạy)', '#ffcc00');
+      } else if (type === 'smg') {
+        sliderDrag.value = 90;
+        sliderFov.value = 75;
+        addLog('Đã chọn Preset: UMP/MP40 (Ghim đầu liên thanh)', '#00f3ff');
+      } else if (type === 'ar') {
+        sliderDrag.value = 80;
+        sliderFov.value = 85;
+        addLog('Đã chọn Preset: AR AK/SCAR (Tầm trung đầm tâm)', '#00ff66');
+      }
+      dragVal.textContent = sliderDrag.value + '%';
+      fovVal.textContent = sliderFov.value + 'px';
+    }
+
+    // Touch Event Simulation
+    function onTouchStart() { isDraggingTouch = true; triggerHaptic(); }
+    function onTouchEnd() { isDraggingTouch = false; }
+
+    canvas.addEventListener('mousedown', onTouchStart);
+    canvas.addEventListener('mouseup', onTouchEnd);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); onTouchStart(); });
+    canvas.addEventListener('touchend', onTouchEnd);
+
+    sliderDrag.addEventListener('input', (e) => dragVal.textContent = e.target.value + '%');
+    sliderFov.addEventListener('input', (e) => fovVal.textContent = e.target.value + 'px');
+
+    // Button Activation
+    mainBtn.addEventListener('click', () => {
+      triggerHaptic();
+      isActive = !isActive;
+
+      if (isActive) {
+        mainBtn.classList.add('active');
+        mainBtn.innerHTML = `<i class="fa-solid fa-fire"></i> ĐÃ BẬT REGEDIT FF (HEADSHOT 99%)`;
+        statusBadge.classList.add('active');
+        statusBadge.textContent = 'ACTIVE';
+        targetMode.textContent = 'DRAG HEADSHOT: ACTIVE';
+        addLog('Đã nạp file Nhẹ Tâm Config FF MAX!', '#00ff66');
+      } else {
+        mainBtn.classList.remove('active');
+        mainBtn.innerHTML = `<i class="fa-solid fa-bolt"></i> KÍCH HOẠT NHẸ TÂM FF`;
+        statusBadge.classList.remove('active');
+        statusBadge.textContent = 'INACTIVE';
+        targetMode.textContent = 'DRAG HEADSHOT: OFF';
+        addLog('Hủy kích hoạt Regedit.', '#ff0033');
+      }
+    });
+
+    // Loop Graphics
+    function render() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const centerX = canvas.width / 2;
+      const centerY = canvas.height / 2;
+
+      // Enemy Moving
+      enemy.x += enemy.vx;
+      enemy.y += enemy.vy;
+      if (enemy.x - 15 < 0 || enemy.x + 15 > canvas.width) enemy.vx *= -1;
+      if (enemy.y - 15 < 0 || enemy.y + 40 > canvas.height) enemy.vy *= -1;
+
+      // Draw Enemy (Thân + Đầu FF)
+      // Body
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(enemy.x - 10, enemy.y, 20, enemy.bodyHeight);
+      // Head
+      ctx.beginPath();
+      ctx.arc(enemy.x, enemy.y - 8, enemy.headRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff0033';
+      ctx.fill();
+
+      // Calculation Drag Headshot FF
+      const headX = enemy.x;
+      const headY = enemy.y - 8;
+      const distToHead = Math.hypot(headX - centerX, headY - centerY);
+      const fovLimit = parseInt(sliderFov.value);
+      let isHeadLocked = false;
+
+      if (isActive && distToHead <= fovLimit) {
+        isHeadLocked = true;
+        const speed = (parseInt(sliderDrag.value) / 100) * 0.25;
+
+        // Kéo vuốt tâm lên Đầu (Upward Drag)
+        crosshair.x += (headX - crosshair.x) * speed;
+        if (toggleHeadshot.checked && isDraggingTouch) {
+          crosshair.y += (headY - crosshair.y) * (speed * 1.5); // Kéo thẳng lên đầu
+        } else {
+          crosshair.y += (headY - crosshair.y) * speed;
+        }
+      } else {
+        // Hồi tâm nhẹ về giữa
+        crosshair.x += (centerX - crosshair.x) * 0.08;
+        crosshair.y += (centerY + 10 - crosshair.y) * 0.08;
+      }
+
+      // Draw FOV Ring
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, fovLimit, 0, Math.PI * 2);
+      ctx.strokeStyle = isHeadLocked ? 'rgba(255, 204, 0, 0.8)' : 'rgba(0, 243, 255, 0.3)';
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([3, 3]);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Draw Line Lock Headshot
+      if (isHeadLocked) {
+        ctx.beginPath();
+        ctx.moveTo(crosshair.x, crosshair.y);
+        ctx.lineTo(headX, headY);
+        ctx.strokeStyle = '#ffcc00';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
+      // Crosshair FF (Chấm tâm màu đỏ/vàng)
+      ctx.beginPath();
+      ctx.arc(crosshair.x, crosshair.y, isDraggingTouch ? 5 : 3, 0, Math.PI * 2);
+      ctx.fillStyle = isHeadLocked ? '#ffcc00' : '#00f3ff';
+      ctx.fill();
+
+      requestAnimationFrame(render);
+    }
+
+    render();
+  </script>
+</body>
+</html>
